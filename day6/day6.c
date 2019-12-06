@@ -11,37 +11,51 @@ int intPower(int num, int power);
 int main(int argc, char** argv)
 {
     int lineCount = 0;
-    int totalPossibleVertices = 0;
     int i;
     char line[9];
     memset(line, '\0', 9);
 
     int fd = open("input.txt", O_RDONLY);
+    int bytesRead = 0;
+    int currentBytes = 0;
 
-    while(read(fd, line, 8) > 0)
+    do
     {
-        lineCount++;
-        totalPossibleVertices += 2;
+        bytesRead = 0;
 
-        printf("%s\n", line);
-    }
+        while(bytesRead + (currentBytes = read(fd, line + bytesRead, 8 - bytesRead)) < 8 && currentBytes != 0)
+            bytesRead += currentBytes;
+
+        if(currentBytes > 0)
+            lineCount++;
+    } while (currentBytes != 0);
 
     lseek(fd, 0, SEEK_SET);
-
-    printf("%d\n", lineCount);
 
     for(i = 0; i < lineCount; i++)
     {
         char orbitedVertex[4], orbitingVertex[4];
-        orbitedVertex[3] = '\0';
-        orbitingVertex[3] = '\0';
+        memset(orbitedVertex, '\0', 4);
+        memset(orbitingVertex, '\0', 4);
 
-        read(fd, orbitedVertex, 3);
-        read(fd, NULL, 1);
-        read(fd, orbitingVertex, 3);
-        read(fd, NULL, 1);
+        currentBytes = 0;
 
-        printf("%s)%s\n", hash(orbitedVertex), hash(orbitingVertex));
+        bytesRead = 0;
+
+        while(bytesRead + (currentBytes = read(fd, line + bytesRead, 8 - bytesRead)) < 8 && currentBytes != 0)
+            bytesRead += currentBytes;
+
+        orbitedVertex[0] = line[0];
+        orbitedVertex[1] = line[1];
+        orbitedVertex[2] = line[2];
+
+        orbitingVertex[0] = line[4];
+        orbitingVertex[1] = line[5];
+        orbitingVertex[2] = line[6];
+
+        //printf("%s)%s\n", orbitedVertex, orbitingVertex);
+
+        printf("%d)%d\n", hash(orbitedVertex), hash(orbitingVertex));
     }
 }
 
@@ -57,6 +71,8 @@ int hash(char* name)
             result += (name[j] - '0') * intPower(100, k);
         else if(name[j] >= 'A' && name[j] <= 'Z')
             result += (name[j] - 'A' + 10) * intPower(100, k);
+
+        k++;
     }
 
     return result;
