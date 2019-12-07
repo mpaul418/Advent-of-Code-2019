@@ -153,7 +153,72 @@ int main(int argc, char** argv)
 
     printf("There are %d total orbits in the graph\n", totalOrbits);
 
+    int youPlanet = -1;
+    int santaPlanet = -1;
 
+    for(i = 0; i < vertexCount; i++)
+    {
+        if(adjMatrix[i][vertexIndices[hash("YOU")] - 1] == 1)
+            youPlanet = i;
+        if(adjMatrix[i][vertexIndices[hash("SAN")] - 1] == 1)
+            santaPlanet = i;
+    }
+
+    int youTransfers = 0;
+    int santaTransfers = 0;
+
+    while(shortestPath[youPlanet] > shortestPath[santaPlanet])
+    {
+        for(i = 0; i < vertexCount; i++)
+        {
+            if(adjMatrix[i][youPlanet] == 1)
+            {
+                youPlanet = i;
+                youTransfers++;
+                break;
+            }
+        }
+    }
+
+    while(shortestPath[santaPlanet] > shortestPath[youPlanet])
+    {
+        for(i = 0; i < vertexCount; i++)
+        {
+            if(adjMatrix[i][santaPlanet] == 1)
+            {
+                santaPlanet = i;
+                santaTransfers++;
+                break;
+            }
+        }
+    }
+
+    while(youPlanet != santaPlanet)
+    {
+        for(i = 0; i < vertexCount; i++)
+        {
+            if(adjMatrix[i][youPlanet] == 1)
+            {
+                youPlanet = i;
+                youTransfers++;
+                break;
+            }
+        }
+
+        for(i = 0; i < vertexCount; i++)
+        {
+            if(adjMatrix[i][santaPlanet] == 1)
+            {
+                santaPlanet = i;
+                santaTransfers++;
+                break;
+            }
+        }
+    }
+
+    printf("There are %d orbital transfers required to move from YOU to SAN.\n", (youTransfers + santaTransfers));
+
+    close(fd);
     for(i = 0; i < vertexCount; i++)
     {
         free(adjMatrix[i]);
