@@ -1,7 +1,6 @@
 import os
 
 def main():
-    os.chdir("Advent of Code 2019")
     os.chdir("day2")
     file = open("input.txt", "r")
     data = file.readline().split(",")
@@ -22,13 +21,11 @@ def intcode(theData, noun, verb):
 
     currentPosition = 0
     while(currentPosition < len(theData)):
+        firstNum = int(theData[int(theData[currentPosition + 1])])
+        secondNum = int(theData[int(theData[currentPosition + 2])])
         if int(theData[currentPosition]) == 1:
-            firstNum = int(theData[int(theData[currentPosition + 1])])
-            secondNum = int(theData[int(theData[currentPosition + 2])])
             theData[int(theData[currentPosition + 3])] = str(firstNum + secondNum)
         elif int(theData[currentPosition]) == 2:
-            firstNum = int(theData[int(theData[currentPosition + 1])])
-            secondNum = int(theData[int(theData[currentPosition + 2])])
             theData[int(theData[currentPosition + 3])] = str(firstNum * secondNum)
         elif int(theData[currentPosition]) == 99:
             break
