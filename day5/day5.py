@@ -18,19 +18,19 @@ def intcode(theData):
 
         if command == 99:
             break
-        elif (command < 1 or command > 4):
+        elif (command < 1 or command > 8):
             print("Broke at position " + str(currentPosition))
             return -1
         
         # determine immediate mode or position mode
-        if get_digit(int(theData[currentPosition]), 2) == 0 and (command == 1 or command == 2):
+        if get_digit(int(theData[currentPosition]), 2) == 0 and (command == 1 or command == 2 or command > 4):
             value1 = int(theData[int(theData[currentPosition + 1])])
         else:
             value1 = int(theData[currentPosition + 1])
         
         value2 = 0
         if currentPosition + 2 < length:
-            if get_digit(int(theData[currentPosition]), 3) == 0 and (command == 1 or command == 2):
+            if get_digit(int(theData[currentPosition]), 3) == 0 and (command == 1 or command == 2 or command > 4):
                 value2 = int(theData[int(theData[currentPosition + 2])])
             else:
                 value2 = int(theData[currentPosition + 2])
@@ -51,6 +51,28 @@ def intcode(theData):
         elif command == 4:
             print(theData[value1])
             instructionNum = 2
+        elif command == 5:
+            if value1 != 0:
+                currentPosition = value2
+            else:
+                instructionNum = 3
+        elif command == 6:
+            if value1 == 0:
+                currentPosition = value2
+            else:
+                instructionNum = 3
+        elif command == 7:
+            instructionNum = 4
+            if value1 < value2:
+                theData[value3] = 1
+            else:
+                theData[value3] = 0
+        elif command == 8:
+            instructionNum = 4
+            if value1 == value2:
+                theData[value3] = 1
+            else:
+                theData[value3] = 0   
 
         currentPosition += instructionNum
 
