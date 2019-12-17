@@ -1,5 +1,87 @@
 import os
 
+class Amplifier:
+    def __init__(self, data, phaseSetting):
+        self.instrPtr = 0
+        self.data = data
+        self.phaseSetting = phaseSetting
+
+    def intcode(self, incomingSignal):
+        length = len(self.data)
+
+        while(self.instrPtr < length):
+            instructionNum = 0
+            inputGiven = 0
+            if(self.instrPtr == 0):
+                inputGiven = self.phaseSetting
+            else:
+                inputGiven = incomingSignal
+            
+            command = int(self.data[self.instrPtr]) % 100
+
+            if command == 99:
+                return 0
+            elif (command < 1 or command > 8):
+                print("Broke at position " + str(self.instrPtr))
+                return -1
+            
+            # determine immediate mode or position mode
+            if get_digit(int(self.data[self.instrPtr]), 2) == 0 and (command == 1 or command == 2 or command > 4):
+                value1 = int(self.data[int(self.data[self.instrPtr + 1])])
+            else:
+                value1 = int(self.data[self.instrPtr + 1])
+            
+            value2 = 0
+            if self.instrPtr + 2 < length:
+                if get_digit(int(self.data[self.instrPtr]), 3) == 0 and (command == 1 or command == 2 or command > 4):
+                    value2 = int(self.data[int(self.data[self.instrPtr + 2])])
+                else:
+                    value2 = int(self.data[self.instrPtr + 2])
+
+            value3 = 0
+            if self.instrPtr + 3 < length:   
+                value3 = int(self.data[self.instrPtr + 3])
+
+            if command == 1:
+                self.data[value3] = str(value1 + value2)
+                instructionNum = 4
+            elif command == 2:
+                self.data[value3] = str(value1 * value2)
+                instructionNum = 4
+            elif command == 3:
+                self.data[value1] = str(inputGiven)
+                inputGiven = incomingSignal
+                instructionNum = 2
+            elif command == 4:
+                self.instrPtr += 2
+                return int(self.data[value1])
+            elif command == 5:
+                if value1 != 0:
+                    self.instrPtr = value2
+                else:
+                    instructionNum = 3
+            elif command == 6:
+                if value1 == 0:
+                    self.instrPtr = value2
+                else:
+                    instructionNum = 3
+            elif command == 7:
+                instructionNum = 4
+                if value1 < value2:
+                    self.data[value3] = 1
+                else:
+                    self.data[value3] = 0
+            elif command == 8:
+                instructionNum = 4
+                if value1 == value2:
+                    self.data[value3] = 1
+                else:
+                    self.data[value3] = 0   
+
+            self.instrPtr += instructionNum
+
+        return -2
+
 def main():
     os.chdir("day7")
     file = open("input.txt", "r")
@@ -24,88 +106,27 @@ def main():
     print(maxSequence)
 
 def outputSignal(theData, amplifiers):
-    backup = theData.copy()
     previousAmount = 0
-    signalAmounts = [0, 0, 0, 0, 0]
-    for i in range (0,len(signalAmounts)):
-        theData = backup.copy()
-        signalAmounts[i] = intcode(theData, amplifiers[i], previousAmount)
-        previousAmount = signalAmounts[i]
-    return signalAmounts[len(signalAmounts) - 1]
-
-def intcode(theData, phaseSetting, incomingSignal):
-    currentPosition = 0
-    result = 0
-    inputGiven = phaseSetting
-    length = len(theData)
-
-    while(currentPosition < length):
-        instructionNum = 0
-        
-        command = int(theData[currentPosition]) % 100
-
-        if command == 99:
-            return result
-        elif (command < 1 or command > 8):
-            print("Broke at position " + str(currentPosition))
-            return -1
-        
-        # determine immediate mode or position mode
-        if get_digit(int(theData[currentPosition]), 2) == 0 and (command == 1 or command == 2 or command > 4):
-            value1 = int(theData[int(theData[currentPosition + 1])])
+    signalOutput = 0
+    amplifierA = Amplifier(theData.copy(), amplifiers[0])
+    amplifierB = Amplifier(theData.copy(), amplifiers[1])
+    amplifierC = Amplifier(theData.copy(), amplifiers[2])
+    amplifierD = Amplifier(theData.copy(), amplifiers[3])
+    amplifierE = Amplifier(theData.copy(), amplifiers[4])
+    
+    while True:
+        previousAmount = amplifierA.intcode(previousAmount)
+        previousAmount = amplifierB.intcode(previousAmount)
+        previousAmount = amplifierC.intcode(previousAmount)
+        previousAmount = amplifierD.intcode(previousAmount)
+        previousAmount = amplifierE.intcode(previousAmount)
+        if previousAmount > 0:
+            signalOutput = previousAmount
         else:
-            value1 = int(theData[currentPosition + 1])
-        
-        value2 = 0
-        if currentPosition + 2 < length:
-            if get_digit(int(theData[currentPosition]), 3) == 0 and (command == 1 or command == 2 or command > 4):
-                value2 = int(theData[int(theData[currentPosition + 2])])
-            else:
-                value2 = int(theData[currentPosition + 2])
+            break
+    return signalOutput
 
-        value3 = 0
-        if currentPosition + 3 < length:   
-            value3 = int(theData[currentPosition + 3])
 
-        if command == 1:
-            theData[value3] = str(value1 + value2)
-            instructionNum = 4
-        elif command == 2:
-            theData[value3] = str(value1 * value2)
-            instructionNum = 4
-        elif command == 3:
-            theData[value1] = str(inputGiven)
-            inputGiven = incomingSignal
-            instructionNum = 2
-        elif command == 4:
-            result += int(theData[value1])
-            instructionNum = 2
-        elif command == 5:
-            if value1 != 0:
-                currentPosition = value2
-            else:
-                instructionNum = 3
-        elif command == 6:
-            if value1 == 0:
-                currentPosition = value2
-            else:
-                instructionNum = 3
-        elif command == 7:
-            instructionNum = 4
-            if value1 < value2:
-                theData[value3] = 1
-            else:
-                theData[value3] = 0
-        elif command == 8:
-            instructionNum = 4
-            if value1 == value2:
-                theData[value3] = 1
-            else:
-                theData[value3] = 0   
-
-        currentPosition += instructionNum
-
-    return result
 
 def get_digit(number, n):
     return number // 10**n % 10
