@@ -8,11 +8,11 @@ def main():
     maxSignal = 0
     maxSequence = [0,0,0,0,0]
 
-    for phaseA in range(0,5):
-        for phaseB in range(0,5):
-            for phaseC in range(0,5):
-                for phaseD in range(0,5):
-                    for phaseE in range(0,5):
+    for phaseA in range(5,10):
+        for phaseB in range(5,10):
+            for phaseC in range(5,10):
+                for phaseD in range(5,10):
+                    for phaseE in range(5,10):
                         phaseAmplifiers = [phaseA, phaseB, phaseC, phaseD, phaseE]
                         if len(phaseAmplifiers) == len(set(phaseAmplifiers)): # if there are no duplicates (unique nums from 0 to 4)
                             signalAmt = outputSignal(data, phaseAmplifiers)
@@ -22,16 +22,15 @@ def main():
 
     print(maxSignal)
     print(maxSequence)
-    
+
 def outputSignal(theData, amplifiers):
     backup = theData.copy()
+    previousAmount = 0
     signalAmounts = [0, 0, 0, 0, 0]
     for i in range (0,len(signalAmounts)):
         theData = backup.copy()
-        if i == 0:
-            signalAmounts[i] = intcode(theData, amplifiers[i], 0)
-        else:
-            signalAmounts[i] = intcode(theData, amplifiers[i], signalAmounts[i - 1])
+        signalAmounts[i] = intcode(theData, amplifiers[i], previousAmount)
+        previousAmount = signalAmounts[i]
     return signalAmounts[len(signalAmounts) - 1]
 
 def intcode(theData, phaseSetting, incomingSignal):
